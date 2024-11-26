@@ -287,7 +287,7 @@ async def async_request_openai_completions(
                                                       most_recent_timestamp)
 
                                 most_recent_timestamp = timestamp
-                                generated_text += data["choices"][0]["text"]
+                                generated_text += data["choices"][0]["text"]  # prefill stage：'' + '还是' = '还是'，decoding stage：'还是' + '适合' = '还是适合'，...
                     if first_chunk_received:
                         output.success = True
                     else:
@@ -295,7 +295,7 @@ async def async_request_openai_completions(
                         output.error = (
                             "Never received a valid chunk to calculate TTFT."
                             "This response will be marked as failed!")
-                    output.generated_text = generated_text
+                    output.generated_text = generated_text  # '还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n台式机显卡4090，预算2万，适合设计师？还是适合程序员？还是适合游戏？还是适合其他？\n\n'
                     output.latency = latency
                 else:
                     output.error = response.reason or ""

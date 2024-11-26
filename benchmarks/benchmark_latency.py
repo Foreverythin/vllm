@@ -38,7 +38,7 @@ def main(args: argparse.Namespace):
                                                      args.input_len))
     dummy_prompts: List[PromptType] = [{
         "prompt_token_ids": batch
-    } for batch in dummy_prompt_token_ids.tolist()]
+    } for batch in dummy_prompt_token_ids.tolist()]  # dummy_prompts.prompt_token_ids size: [8, 32], 因为batch_size是8，每个请求是固定的32个token
 
     def run_to_completion(profile_dir: Optional[str] = None):
         if profile_dir:

@@ -100,6 +100,9 @@ def sample_sharegpt_requests(
     # Only keep the first two turns of each conversation.
     dataset = [(data["conversations"][0]["value"],
                 data["conversations"][1]["value"]) for data in dataset]
+    
+    ##################################################################
+    # dataset: [(q, a), (q, a), (q, a), ....] 每一个(q, a)都来自不同的conversation
 
     # Shuffle the dataset.
     random.shuffle(dataset)
@@ -111,13 +114,13 @@ def sample_sharegpt_requests(
             break
 
         # Tokenize the prompts and completions.
-        prompt = dataset[i][0]
-        prompt_token_ids = tokenizer(prompt).input_ids
-        completion = dataset[i][1]
-        completion_token_ids = tokenizer(completion).input_ids
-        prompt_len = len(prompt_token_ids)
+        prompt = dataset[i][0]  # '帮我配个台式机，显卡4090，预算2万适合设计师？'
+        prompt_token_ids = tokenizer(prompt).input_ids  # [108965, 54387, 18947, 53938, 28330, 32648, 3837, 99580, 99603, 19, 15, 24, 15, 3837, ...]
+        completion = dataset[i][1]  # '<div><p>根据您的要求，我会推荐以下台式机版本：</p><p><strong>中央处理器</strong>：AMD 锐龙 9 5900X</p><p><strong>显卡</strong>：NVIDIA GeForce RTX 3090</p><p><strong>内存</strong>：32GB DDR4-3200</p><p><strong>存储</strong>：1TB NVMe SSD</p><p><strong>电源</strong>：850W 80+ 金牌认证</p><p><strong>机箱</strong>：中塔式 ATX 机箱，具有良好的气流和电缆管理选项</p><p>以下是零件的估计价格明细：</p><ul><li>AMD 锐龙 9 5900X：~¥5,200</li><li>NVIDIA GeForce RTX 3090：~¥19,999</li><li>32GB DDR4-3200 内存：~¥1,200</li><li>1TB NVMe SSD：~¥1,000</li><li>850W 80+ 金牌认证电源：~¥1,000</li><li>中塔式 ATX 机箱：~¥500</li></ul><p>总预估成本：~¥28,899 RMB</p><p>此构建应该为设计人员提供出色的性能，具有强大的 CPU 和 GPU 组合。RTX 3090 显卡是目前最强大的显卡之一，应该可以为 3D 建模、渲染和其他图形密集型任务提供出色的性能。32GB RAM 应该为大型项目提供充足的内存，1TB NVMe SSD 应该为您的操作系统和应用程序提供快速存储。850W 电源应能为该系统提供充足的电力，并允许在需要时进行未来升级。</p></div>'
+        completion_token_ids = tokenizer(completion).input_ids  # [2626, 1784, 79, 29, 100345, 101214, 101882, 3837, 105351, 101914, 87752, 53938, 28330, 32648, ...]
+        prompt_len = len(prompt_token_ids)  # 20
         output_len = len(completion_token_ids
-                         ) if fixed_output_len is None else fixed_output_len
+                         ) if fixed_output_len is None else fixed_output_len  # 447
         if prompt_len < 4 or (fixed_output_len is None and output_len < 4):
             # Prune too short sequences.
             continue
@@ -126,7 +129,7 @@ def sample_sharegpt_requests(
             continue
         filtered_dataset.append((prompt, prompt_len, output_len, None))
 
-    return filtered_dataset
+    return filtered_dataset  # [('帮我配个台式机，显卡4090，预算2万适合设计师？', 20, 447, None), ('<p><b>System</b></p><p>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2021-09\nCurrent date: 2023-03-26</p>', 55, 15, None), ('<div><small><i>This conversation is shared from <a href="https://chathub.gg"><b>ChatHub</b></a></i></small></div>', 36, 132, None), ('I would like to create a chatbot using you to simulate you being an end user at a business chatting with an IT student to help solve your simulated computer problem', 32, 115, None), ("short write up for a mental health web app that improves the outcome of people's mental health", 18, 274, None), ('can you help me write the code for a vue app for logging ice skating? I would like to write a form where you upload a photo and the app gets the coordinates from the photo and looks up the nearest lake. It should then display the photo in the app with a caption of the name of the lake', 62, 1745, None), ('5 / 5以下是模組的.snbt 檔案，請翻譯引號裏面成繁體中文\n\n```\t\t\tdescription: [\n\t\t\t\t"Once you have a Doggy Talents dog, you will be able to right click on it with a stick in hand (main or secondary) to open the dog information/talents menu."\n\t\t\t\t""\n\t\t\t\t"This menu allows you to change the name of your dog, toggle its behavior, add talents, and toggle whether to obey other players. In the menu, your dog\'s basic level, dire level, and level spending points will be displayed just under the name box."\n\t\t\t\t""\n\t\t\t\t"The more you level up your dog using the Treats in this order: Training Treat, Super Treat, Master Treat, and Dire Treat; the more points you have available to spend on your talents. Eventually, the dog will hit its maximum level, which will not"\n\t\t\t\t"allow you to get anymore points once it hits this level cap."```', 209, 406, None), ("I'm building a training program to train QA testers in 9 months. For that, they are going to complete 10 fictional, realistic, immersive projects online. Each project focuses on a set of skills, from web development basics to functional testing and test automation.\n\nI need to provide them with a fictional company : description, industry, website structure, content and features. Then I'll have to provide them with fictional but realistic test scenarios and test cases that cover the website's features. This needs to look like what a QA tester would use in an actual company. Please provide me with :\n- the company description (industry, name, purpose)\n- the company's website (structure and content of the pages)\n- the engineering team's test cases and scenarios to cover the whole website", 157, 596, None), ('Responda como um especialista em Copywriting, SEO e Redação Publicitária. Você tem trabalhado nesse campo há 20 anos, escrevendo artigos para blogs que geram grandes receitas com adsense.\nA sua tarefa é escrever os melhores artigos para blogs, que gerarão muitos acessos e cliques.\nÉ importante que faça SEMPRE perguntas esclarecedoras antes de dar uma resposta, para assegurar uma melhor compreensão do pedido.\nFicou entendido?', 114, 133, None), ('175B参数描绘出的世界，帮我翻译成日文', 14, 111, None), ('i created a pop up with class "add-org-popup" that closes when i click a close button. it also closes when i click anywhere outside the input elements. \n\nI want a javascript script that will make the pop up close when i press the esc button on my keyboard.', 56, 616, None), ('Продолжи: Ты можешь вывести основные черты характера президента Путина В,В\n!\nКак и любой человек, у президента Путина есть множество черт характера, которые влияют на его решения и поведение в различных ситуациях. Однако, как и любой лидер, он также стремится сохранять свой образ и имидж, поэтому некоторые черты его характера могут оставаться скрытыми или недоступными для наблюдения.\n\nНесмотря на это, основными чертами характера президента Путина, которые можно выделить из его действий и выступлений, являются:\n\nРешительность и уверенность в себе. Путин известен своей способностью быстро принимать решения и не колебаться в сложных ситуациях. Он также уверен в своих действиях и позиции, что проявляется в его', 202, 306, None), ('请介绍下三国演义', 6, 105, None), ('1 / 1DDS的发展与研究现状', 9, 388, None), ...]
 
 
 def sample_sonnet_requests(
@@ -481,21 +484,21 @@ async def benchmark(
 
     print("Starting initial single prompt test run...")
     test_prompt, test_prompt_len, test_output_len, test_mm_content = (
-        input_requests[0])
+        input_requests[0])  # '帮我配个台式机，显卡4090，预算2万适合设计师？'， 20， 447， None
     if backend != "openai-chat" and test_mm_content is not None:
         # multi-modal benchmark is only available on OpenAI Chat backend.
         raise ValueError(
             "Multi-modal content is only supported on 'openai-chat' backend.")
     test_input = RequestFuncInput(
-        model=model_id,
-        prompt=test_prompt,
-        api_url=api_url,
-        prompt_len=test_prompt_len,
-        output_len=test_output_len,
-        logprobs=logprobs,
-        best_of=best_of,
-        multi_modal_content=test_mm_content,
-        ignore_eos=ignore_eos,
+        model=model_id,  # '/home/lpy/vllm/models/Qwen2.5-0.5B-Instruct'
+        prompt=test_prompt,  # '帮我配个台式机，显卡4090，预算2万适合设计师？'
+        api_url=api_url,  # 'http://localhost:8000/v1/completions'
+        prompt_len=test_prompt_len,  # 20
+        output_len=test_output_len,  # 447
+        logprobs=logprobs,  # None
+        best_of=best_of,  # 1
+        multi_modal_content=test_mm_content,  # None
+        ignore_eos=ignore_eos,  # False
     )
     test_output = await request_func(request_func_input=test_input)
     if not test_output.success:
@@ -746,7 +749,7 @@ def main(args: argparse.Namespace):
             num_requests=args.num_prompts,
             tokenizer=tokenizer,
             fixed_output_len=args.sharegpt_output_len,
-        )
+        )  # [('帮我配个台式机，显卡4090，预算2万适合设计师？', 20, 447, None), ('<p><b>System</b></p><p>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2021-09\nCurrent date: 2023-03-26</p>', 55, 15, None), ('<div><small><i>This conversation is shared from <a href="https://chathub.gg"><b>ChatHub</b></a></i></small></div>', 36, 132, None), ('I would like to create a chatbot using you to simulate you being an end user at a business chatting with an IT student to help solve your simulated computer problem', 32, 115, None), ("short write up for a mental health web app that improves the outcome of people's mental health", 18, 274, None), ('can you help me write the code for a vue app for logging ice skating? I would like to write a form where you upload a photo and the app gets the coordinates from the photo and looks up the nearest lake. It should then display the photo in the app with a caption of the name of the lake', 62, 1745, None), ('5 / 5以下是模組的.snbt 檔案，請翻譯引號裏面成繁體中文\n\n```\t\t\tdescription: [\n\t\t\t\t"Once you have a Doggy Talents dog, you will be able to right click on it with a stick in hand (main or secondary) to open the dog information/talents menu."\n\t\t\t\t""\n\t\t\t\t"This menu allows you to change the name of your dog, toggle its behavior, add talents, and toggle whether to obey other players. In the menu, your dog\'s basic level, dire level, and level spending points will be displayed just under the name box."\n\t\t\t\t""\n\t\t\t\t"The more you level up your dog using the Treats in this order: Training Treat, Super Treat, Master Treat, and Dire Treat; the more points you have available to spend on your talents. Eventually, the dog will hit its maximum level, which will not"\n\t\t\t\t"allow you to get anymore points once it hits this level cap."```', 209, 406, None), ("I'm building a training program to train QA testers in 9 months. For that, they are going to complete 10 fictional, realistic, immersive projects online. Each project focuses on a set of skills, from web development basics to functional testing and test automation.\n\nI need to provide them with a fictional company : description, industry, website structure, content and features. Then I'll have to provide them with fictional but realistic test scenarios and test cases that cover the website's features. This needs to look like what a QA tester would use in an actual company. Please provide me with :\n- the company description (industry, name, purpose)\n- the company's website (structure and content of the pages)\n- the engineering team's test cases and scenarios to cover the whole website", 157, 596, None), ('Responda como um especialista em Copywriting, SEO e Redação Publicitária. Você tem trabalhado nesse campo há 20 anos, escrevendo artigos para blogs que geram grandes receitas com adsense.\nA sua tarefa é escrever os melhores artigos para blogs, que gerarão muitos acessos e cliques.\nÉ importante que faça SEMPRE perguntas esclarecedoras antes de dar uma resposta, para assegurar uma melhor compreensão do pedido.\nFicou entendido?', 114, 133, None), ('175B参数描绘出的世界，帮我翻译成日文', 14, 111, None), ('i created a pop up with class "add-org-popup" that closes when i click a close button. it also closes when i click anywhere outside the input elements. \n\nI want a javascript script that will make the pop up close when i press the esc button on my keyboard.', 56, 616, None), ('Продолжи: Ты можешь вывести основные черты характера президента Путина В,В\n!\nКак и любой человек, у президента Путина есть множество черт характера, которые влияют на его решения и поведение в различных ситуациях. Однако, как и любой лидер, он также стремится сохранять свой образ и имидж, поэтому некоторые черты его характера могут оставаться скрытыми или недоступными для наблюдения.\n\nНесмотря на это, основными чертами характера президента Путина, которые можно выделить из его действий и выступлений, являются:\n\nРешительность и уверенность в себе. Путин известен своей способностью быстро принимать решения и не колебаться в сложных ситуациях. Он также уверен в своих действиях и позиции, что проявляется в его', 202, 306, None), ('请介绍下三国演义', 6, 105, None), ('1 / 1DDS的发展与研究现状', 9, 388, None), ...]
 
     elif args.dataset_name == "sonnet":
         # Do not format the prompt, pass to message directly
@@ -802,7 +805,7 @@ def main(args: argparse.Namespace):
     else:
         raise ValueError(f"Unknown dataset: {args.dataset_name}")
 
-    gootput_config_dict = check_goodput_args(args)
+    gootput_config_dict = check_goodput_args(args)  # 如果goodput参数没有指定，那么goodput_config_dict为{}。这里应该打错了，应该是goodput
 
     benchmark_result = asyncio.run(
         benchmark(

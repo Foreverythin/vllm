@@ -137,7 +137,7 @@ def run_vllm(
     for request in requests:
         prompts.append(
             TextPrompt(prompt=request.prompt,
-                       multi_modal_data=request.multi_modal_data))
+                       multi_modal_data=request.multi_modal_data))  # [{'prompt': '帮我配个台式机，显卡4090，预算2万适合设计师？', 'multi_modal_data': None}, .....]
         sampling_params.append(
             SamplingParams(
                 n=n,
@@ -145,7 +145,7 @@ def run_vllm(
                 top_p=1.0,
                 ignore_eos=True,
                 max_tokens=request.expected_output_len,
-            ))
+            ))  # [SamplingParams(n=1, presence_penalty=0.0, frequency_penalty=0.0, repetition_penalty=1.0, temperature=1.0, top_p=1.0, top_k=-1, min_p=0.0, seed=None, stop=[], stop_token_ids=[], bad_words=[], include_stop_str_in_output=False, ignore_eos=True, max_tokens=447, min_tokens=0, logprobs=None, prompt_logprobs=None, skip_special_tokens=True, spaces_between_special_tokens=True, truncate_prompt_tokens=None, guided_decoding=None), ....]
 
     use_beam_search = False
 

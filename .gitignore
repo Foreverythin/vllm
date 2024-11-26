@@ -4,6 +4,9 @@
 # vllm-flash-attn built from source
 vllm/vllm_flash_attn/
 
+# models
+models/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
