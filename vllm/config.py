@@ -227,7 +227,7 @@ class ModelConfig:
         self.encoder_config = self._get_encoder_config()
         self.hf_image_processor_config = get_hf_image_processor_config(
             self.model, revision)
-        self.dtype = _get_and_verify_dtype(self.hf_text_config, dtype)
+        self.dtype = _get_and_verify_dtype(self.hf_text_config, dtype)  # torch.bfloat16
         self.use_async_output_proc = use_async_output_proc
         self.mm_processor_kwargs = mm_processor_kwargs
 
@@ -276,7 +276,7 @@ class ModelConfig:
         if not self.skip_tokenizer_init:
             self._verify_tokenizer_mode()
 
-        self.is_attention_free = self._init_attention_free()
+        self.is_attention_free = self._init_attention_free()  # False
         self.has_inner_state = self._init_has_inner_state()
 
         if current_platform.is_neuron():
@@ -284,9 +284,9 @@ class ModelConfig:
         else:
             self.override_neuron_config = None
 
-        supported_tasks, task = self._resolve_task(task, self.hf_config)
-        self.supported_tasks = supported_tasks
-        self.task: Final = task
+        supported_tasks, task = self._resolve_task(task, self.hf_config)  # ({'embedding', 'generate'}, 'generate')
+        self.supported_tasks = supported_tasks  # {'embedding', 'generate'}
+        self.task: Final = task  # 'generate'
         self.pooler_config = self._init_pooler_config(override_pooler_config)
 
         self._verify_quantization()
@@ -733,7 +733,7 @@ class CacheConfig:
         block_size: Size of a cache block in number of tokens.
         gpu_memory_utilization: Fraction of GPU memory to use for the
             vLLM execution.
-        swap_space: Size of the CPU swap space per GPU (in GiB).
+        swap_space: Size of the CPU swap space per GPU (in GiB).  # 每个 GPU 分配了 4 GiB 的 CPU 内存作为交换空间
         cache_dtype: Data type for kv cache storage.
         num_gpu_blocks_override: Number of GPU blocks to use. This overrides the
             profiled num_gpu_blocks if specified. Does nothing if None.
@@ -1211,7 +1211,7 @@ class DeviceConfig:
     def __init__(self, device: str = "auto") -> None:
         if device == "auto":
             # Automated device type detection
-            self.device_type = current_platform.device_type
+            self.device_type = current_platform.device_type  # cuda
             if not self.device_type:
                 raise RuntimeError("Failed to infer device type")
         else:

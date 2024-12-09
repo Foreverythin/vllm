@@ -75,7 +75,7 @@ class GPUExecutor(ExecutorBase):
         # remains to abstract away the device for non-GPU configurations.
         logger.info("# GPU blocks: %d, # CPU blocks: %d", num_gpu_blocks,
                     num_cpu_blocks)
-        max_concurrency = (num_gpu_blocks * self.cache_config.block_size /
+        max_concurrency = (num_gpu_blocks * self.cache_config.block_size /  # 3.41552734375
                            self.model_config.max_model_len)
         logger.info("Maximum concurrency for %s tokens per request: %.2fx",
                     self.model_config.max_model_len, max_concurrency)

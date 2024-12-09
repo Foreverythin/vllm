@@ -118,7 +118,7 @@ class EngineArgs:
     use_v2_block_manager: bool = True
     swap_space: float = 4  # GiB
     cpu_offload_gb: float = 0  # GiB
-    gpu_memory_utilization: float = 0.90
+    gpu_memory_utilization: float = 0.20
     max_num_batched_tokens: Optional[int] = None
     max_num_seqs: int = 256
     max_logprobs: int = 20  # Default value for OpenAI Chat Completions API
@@ -906,7 +906,7 @@ class EngineArgs:
     @classmethod
     def from_cli_args(cls, args: argparse.Namespace):
         # Get the list of attributes of this dataclass.
-        attrs = [attr.name for attr in dataclasses.fields(cls)]
+        attrs = [attr.name for attr in dataclasses.fields(cls)]  # 只包含属性名
         # Set the attributes from the parsed arguments.
         engine_args = cls(**{attr: getattr(args, attr) for attr in attrs})
         return engine_args
@@ -978,8 +978,8 @@ class EngineArgs:
             "CPU offload space must be non-negative"
             f", but got {self.cpu_offload_gb}")
 
-        device_config = DeviceConfig(device=self.device)
-        model_config = self.create_model_config()
+        device_config = DeviceConfig(device=self.device)  # DeviceConfig实例{device:device(type: cuda), device_type: 'cuda'}
+        model_config = self.create_model_config()  # 模型的一些配置信息， EngineArgs(model='/home/lpy/vllm-latest/models/Qwen2.5-0.5B-Instruct', served_model_name=None, tokenizer='/home/lpy/vllm-latest/models/Qwen2.5-0.5B-Instruct', task='auto', skip_tokenizer_init=False, tokenizer_mode='auto', trust_remote_code=False, allowed_local_media_path=None, download_dir=None, load_format='auto', config_format=<ConfigFormat.AUTO: 'auto'>, dtype='auto', kv_cache_dtype='auto', quantization_param_path=None, seed=0, max_model_len=None, worker_use_ray=False, distributed_executor_backend=None, pipeline_parallel_size=1, tensor_parallel_size=1, max_parallel_loading_workers=None, block_size=16, enable_prefix_caching=False, disable_sliding_window=False, use_v2_block_manager=False, swap_space=4, cpu_offload_gb=0, gpu_memory_utilization=0.2, max_num_batched_tokens=None, max_num_seqs=256, max_logprobs=20, disable_log_stats=False, revision=None, code_revision=None, rope_scaling=None, rope_theta=None, hf_overrides=None, tokenizer_revision=None, quantization=None, enforce_eager=False, max_seq_len_to_capture=8192, disable_custom_all_reduce=False, tokenizer_pool_size=0, tokenizer_pool_type='ray', tokenizer_pool_extra_config=None, limit_mm_per_prompt=None, mm_processor_kwargs=None, enable_lora=False, enable_lora_bias=False, max_loras=1, max_lora_rank=16, enable_prompt_adapter=False, max_prompt_adapters=1, max_prompt_adapter_token=0, fully_sharded_loras=False, lora_extra_vocab_size=256, long_lora_scaling_factors=None, lora_dtype='auto', max_cpu_loras=None, device='auto', num_scheduler_steps=1, multi_step_stream_outputs=True, ray_workers_use_nsight=False, num_gpu_blocks_override=None, num_lookahead_slots=0, model_loader_extra_config=None, ignore_patterns=[], preemption_mode=None, scheduler_delay_factor=0.0, enable_chunked_prefill=None, guided_decoding_backend='outlines', speculative_model=None, speculative_model_quantization=None, speculative_draft_tensor_parallel_size=None, num_speculative_tokens=None, speculative_disable_mqa_scorer=False, speculative_max_model_len=None, speculative_disable_by_batch_size=None, ngram_prompt_lookup_max=None, ngram_prompt_lookup_min=None, spec_decoding_acceptance_method='rejection_sampler', typical_acceptance_sampler_posterior_threshold=None, typical_acceptance_sampler_posterior_alpha=None, qlora_adapter_name_or_path=None, disable_logprobs_during_spec_decoding=None, otlp_traces_endpoint=None, collect_detailed_traces=None, disable_async_output_proc=False, scheduling_policy='fcfs', override_neuron_config=None, override_pooler_config=None, compilation_config=None, worker_cls='auto')
 
         if model_config.is_multimodal_model:
             if self.enable_prefix_caching:
@@ -1002,8 +1002,8 @@ class EngineArgs:
             cpu_offload_gb=self.cpu_offload_gb,
         )
         parallel_config = ParallelConfig(
-            pipeline_parallel_size=self.pipeline_parallel_size,
-            tensor_parallel_size=self.tensor_parallel_size,
+            pipeline_parallel_size=self.pipeline_parallel_size,  # 流水线并行，这里为1，代表不使用流水线并行策略
+            tensor_parallel_size=self.tensor_parallel_size,  # 张量并行，这里为1，代表不适用张量并行策略
             worker_use_ray=self.worker_use_ray,
             max_parallel_loading_workers=self.max_parallel_loading_workers,
             disable_custom_all_reduce=self.disable_custom_all_reduce,
@@ -1017,7 +1017,7 @@ class EngineArgs:
             worker_cls=self.worker_cls,
         )
 
-        max_model_len = model_config.max_model_len
+        max_model_len = model_config.max_model_len  # 32k
         use_long_context = max_model_len > 32768
         if self.enable_chunked_prefill is None:
             # If not explicitly set, enable chunked prefill by default for
@@ -1112,20 +1112,20 @@ class EngineArgs:
                 " please file an issue with detailed information.")
 
         scheduler_config = SchedulerConfig(
-            task=model_config.task,
-            max_num_batched_tokens=self.max_num_batched_tokens,
-            max_num_seqs=self.max_num_seqs,
-            max_model_len=model_config.max_model_len,
+            task=model_config.task,  # generate
+            max_num_batched_tokens=self.max_num_batched_tokens,  # None -> 32768
+            max_num_seqs=self.max_num_seqs,  # 256
+            max_model_len=model_config.max_model_len,  # 32768 (32k)
             num_lookahead_slots=num_lookahead_slots,
-            delay_factor=self.scheduler_delay_factor,
-            enable_chunked_prefill=self.enable_chunked_prefill,
-            is_multimodal_model=model_config.is_multimodal_model,
-            preemption_mode=self.preemption_mode,
-            num_scheduler_steps=self.num_scheduler_steps,
-            multi_step_stream_outputs=self.multi_step_stream_outputs,
+            delay_factor=self.scheduler_delay_factor,  # 0.0
+            enable_chunked_prefill=self.enable_chunked_prefill,  # False
+            is_multimodal_model=model_config.is_multimodal_model,  # False
+            preemption_mode=self.preemption_mode,  # None  有两种：recompute和swap
+            num_scheduler_steps=self.num_scheduler_steps,  # 1 # 每次调度后执行一个forward step
+            multi_step_stream_outputs=self.multi_step_stream_outputs,  # True
             send_delta_data=(envs.VLLM_USE_RAY_SPMD_WORKER
                              and parallel_config.use_ray),
-            policy=self.scheduling_policy)
+            policy=self.scheduling_policy)  # fcfs
         lora_config = LoRAConfig(
             bias_enabled=self.enable_lora_bias,
             max_lora_rank=self.max_lora_rank,
@@ -1146,7 +1146,7 @@ class EngineArgs:
 
         load_config = self.create_load_config()
 
-        prompt_adapter_config = PromptAdapterConfig(
+        prompt_adapter_config = PromptAdapterConfig(  # None
             max_prompt_adapters=self.max_prompt_adapters,
             max_prompt_adapter_token=self.max_prompt_adapter_token) \
                                         if self.enable_prompt_adapter else None

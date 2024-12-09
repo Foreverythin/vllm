@@ -472,7 +472,7 @@ class LLMEngine:
         The workers will determine the number of blocks in both the GPU cache
         and the swap CPU cache.
         """
-        num_gpu_blocks, num_cpu_blocks = (
+        num_gpu_blocks, num_cpu_blocks = (  # 6995, 21845
             self.model_executor.determine_num_available_blocks())
 
         if self.cache_config.num_gpu_blocks_override is not None:
@@ -568,7 +568,7 @@ class LLMEngine:
     ) -> "LLMEngine":
         """Creates an LLM engine from the engine arguments."""
         # Create the engine configs.
-        engine_config = engine_args.create_engine_config()
+        engine_config = engine_args.create_engine_config()  # 包含一堆config, cache_config, compilation_config, decoding_config, device_config, load_config, lora_config, model_config, observability_config, parallel_config, prompt_adapter_config, quant_config, scheduler_config, speculative_config
         executor_class = cls._get_executor_cls(engine_config)
         # Create the LLM engine.
         engine = cls(
@@ -662,9 +662,9 @@ class LLMEngine:
 
         self._validate_model_inputs(processed_inputs, lora_request)
         # Create the sequences.
-        block_size = self.cache_config.block_size
-        seq_id = next(self.seq_counter)
-        eos_token_id = self.input_preprocessor.get_eos_token_id(lora_request)
+        block_size = self.cache_config.block_size  # 16
+        seq_id = next(self.seq_counter)  # 0 # 类似于一个静态变量，全局递增
+        eos_token_id = self.input_preprocessor.get_eos_token_id(lora_request)  # 151645
 
         if is_encoder_decoder_inputs(processed_inputs):
             decoder_inputs = processed_inputs["decoder"]
@@ -835,13 +835,13 @@ class LLMEngine:
                 prompt,
                 tokenizer=self.get_tokenizer(lora_request=lora_request))
 
-        preprocessed_inputs = self.input_preprocessor.preprocess(
+        preprocessed_inputs = self.input_preprocessor.preprocess(  # {'type': 'token', 'prompt_token_ids': [32, 12305, 1231, 537, 5811, 552, 264, 3738, 1660], 'prompt': 'A robot may not injure a human being'}
             prompt,
             request_id=request_id,
             lora_request=lora_request,
             prompt_adapter_request=prompt_adapter_request,
         )
-        processed_inputs = self.input_processor(preprocessed_inputs)
+        processed_inputs = self.input_processor(preprocessed_inputs)  # {'type': 'token', 'prompt_token_ids': [32, 12305, 1231, 537, 5811, 552, 264, 3738, 1660], 'prompt': 'A robot may not injure a human being'}
 
         self._add_processed_request(
             request_id=request_id,
@@ -908,7 +908,7 @@ class LLMEngine:
 
         # Create the sequence group.
         seq_group = SequenceGroup(
-            request_id=request_id,
+            request_id=request_id,  # '0'
             seqs=[seq],
             arrival_time=arrival_time,
             sampling_params=sampling_params,

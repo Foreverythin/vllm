@@ -1062,7 +1062,7 @@ def deprecate_args(
 
     return wrapper
 
-
+# 标记某些函数的关键字参数为已废弃（deprecated），并在使用这些废弃参数时发出警告。它主要用于提醒开发者，某些参数将在未来的版本中移除，同时推荐使用新的替代参数。
 def deprecate_kwargs(
     *kws: str,
     is_deprecated: Union[bool, Callable[[], bool]] = True,

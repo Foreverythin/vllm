@@ -427,7 +427,7 @@ class ModelInputForGPUBuilder(ModelRunnerInputBuilderBase[ModelInputForGPU]):
             inter_data_cache[num_seqs] = PyObjectCache(
                 self.gen_inter_data_builder(num_seqs))
 
-        obj = inter_data_cache[num_seqs].get_object()
+        obj = inter_data_cache[num_seqs].get_object()  # _obj_cache最多支持256个seq做batch，因此有256个元素，每个元素都包含一个seqid->block_table的映射信息、以及输入token的id等信息
         obj.__init__(*args, **kwargs)
         return obj
 
@@ -1309,7 +1309,7 @@ class GPUModelRunnerBase(ModelRunnerBase[TModelInputForGPU]):
                 multi_modal_placeholders=dummy_data.multi_modal_placeholders,
             )
             seqs.append(seq)
-
+        # 此时seqs有256个seq，每个seq中有128个0（dummy data）；batch_size=32768
         # Run the model with the dummy inputs.
         num_layers = self.model_config.get_num_layers(self.parallel_config)
         # use an empty tensor instead of `None`` to force Dynamo to pass

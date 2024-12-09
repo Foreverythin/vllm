@@ -32,14 +32,14 @@ class CacheEngine:
         self.parallel_config = parallel_config
         self.device_config = device_config
 
-        self.head_size = model_config.get_head_size()
+        self.head_size = model_config.get_head_size()  # 64
         # Models like Jamba, have mixed typed layers, E.g Mamba
-        self.num_attention_layers = model_config.get_num_attention_layers(
+        self.num_attention_layers = model_config.get_num_attention_layers(  # 24
             parallel_config)
-        self.num_kv_heads = model_config.get_num_kv_heads(parallel_config)
+        self.num_kv_heads = model_config.get_num_kv_heads(parallel_config)  # 2
 
-        self.block_size = cache_config.block_size
-        self.num_gpu_blocks = cache_config.num_gpu_blocks
+        self.block_size = cache_config.block_size  # 16
+        self.num_gpu_blocks = cache_config.num_gpu_blocks  # 10059
         if self.num_gpu_blocks:
             self.num_gpu_blocks //= parallel_config.pipeline_parallel_size
         self.num_cpu_blocks = cache_config.num_cpu_blocks
@@ -52,7 +52,7 @@ class CacheEngine:
             self.dtype = STR_DTYPE_TO_TORCH_DTYPE[cache_config.cache_dtype]
 
         # Get attention backend.
-        self.attn_backend = get_attn_backend(self.head_size,
+        self.attn_backend = get_attn_backend(self.head_size,  # FlashAttention
                                              model_config.dtype,
                                              cache_config.cache_dtype,
                                              self.block_size,
@@ -69,9 +69,9 @@ class CacheEngine:
         device: str,
     ) -> List[torch.Tensor]:
         """Allocates KV cache on the specified device."""
-        kv_cache_shape = self.attn_backend.get_kv_cache_shape(
+        kv_cache_shape = self.attn_backend.get_kv_cache_shape(  # (2, 10059, 16, 2, 64)，第一个2是一个K和一个V
             num_blocks, self.block_size, self.num_kv_heads, self.head_size)
-        pin_memory = is_pin_memory_available() if device == "cpu" else False
+        pin_memory = is_pin_memory_available() if device == "cpu" else False  # 锁页内存
         kv_cache: List[torch.Tensor] = []
         for _ in range(self.num_attention_layers):
             # null block in CpuGpuBlockAllocator requires at least that
@@ -103,17 +103,17 @@ class CacheEngine:
         model_config: ModelConfig,
         parallel_config: ParallelConfig,
     ) -> int:
-        head_size = model_config.get_head_size()
-        num_heads = model_config.get_num_kv_heads(parallel_config)
-        num_attention_layers = model_config.get_num_attention_layers(
+        head_size = model_config.get_head_size()  # 64  # 多头后的embedding维度
+        num_heads = model_config.get_num_kv_heads(parallel_config)  # 2
+        num_attention_layers = model_config.get_num_attention_layers(  # 24
             parallel_config)
 
         key_cache_block = cache_config.block_size * num_heads * head_size
         value_cache_block = key_cache_block
-        total = num_attention_layers * (key_cache_block + value_cache_block)
+        total = num_attention_layers * (key_cache_block + value_cache_block)  # 一个token需要占用的所有空间大小（用float的个数来表示，torch.bfloat16）
         if cache_config.cache_dtype == "auto":
             dtype = model_config.dtype
         else:
             dtype = STR_DTYPE_TO_TORCH_DTYPE[cache_config.cache_dtype]
-        dtype_size = get_dtype_size(dtype)
-        return dtype_size * total
+        dtype_size = get_dtype_size(dtype)  # 一个torch.bfloat16占用2个字节
+        return dtype_size * total  # 一个token在模型中需要占用多少字节

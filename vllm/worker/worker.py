@@ -186,10 +186,10 @@ class Worker(LocalOrDistributedWorkerBase):
         """
         # Profile the memory usage of the model and get the maximum number of
         # cache blocks that can be allocated with the remaining free memory.
-        torch.cuda.empty_cache()
-        torch.cuda.reset_peak_memory_stats()
+        torch.cuda.empty_cache()  # 清空 GPU 中的缓存内存，为后续分析提供一个尽可能干净的环境。
+        torch.cuda.reset_peak_memory_stats()  # 重置 PyTorch 的内存统计信息，以便准确测量内存使用的峰值。
 
-        free_memory_pre_profile, total_gpu_memory = torch.cuda.mem_get_info()
+        free_memory_pre_profile, total_gpu_memory = torch.cuda.mem_get_info()  # 单位是字节，23863164928（22.22GiB），25386352640 （23.64GiB）
         start_time = time.time()
 
         # Execute a forward pass with dummy inputs to profile the memory usage
@@ -220,13 +220,13 @@ class Worker(LocalOrDistributedWorkerBase):
 
         # Calculate the number of blocks that can be allocated with the
         # profiled peak memory.
-        cache_block_size = self.get_cache_block_size_bytes()
+        cache_block_size = self.get_cache_block_size_bytes()  # 196608 bytes
         if cache_block_size == 0:
             num_gpu_blocks = 0
             num_cpu_blocks = 0
         else:
-            num_gpu_blocks = int(available_kv_cache_memory // cache_block_size)
-            num_cpu_blocks = int(self.cache_config.swap_space_bytes //
+            num_gpu_blocks = int(available_kv_cache_memory // cache_block_size)  # 6995
+            num_cpu_blocks = int(self.cache_config.swap_space_bytes //  # 21845
                                  cache_block_size)
         num_gpu_blocks = max(num_gpu_blocks, 0)
         num_cpu_blocks = max(num_cpu_blocks, 0)

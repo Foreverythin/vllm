@@ -416,7 +416,7 @@ class Sequence:
         self.lora_request = lora_request
         self.prompt_adapter_request = prompt_adapter_request
 
-        self.data = SequenceData.from_seqs(self.prompt_token_ids)
+        self.data = SequenceData.from_seqs(self.prompt_token_ids)  # 记录当前seq的一些计算信息： SequenceData(prompt_token_ids=array('l', [32, 12305, 1231, 537, 5811, 552, 264, 3738, 1660]), output_token_ids=(), cumulative_logprob=0.0, get_num_computed_tokens=0
         self.output_logprobs: SampleLogprobs = []
         self.output_text = ""
 
@@ -434,11 +434,11 @@ class Sequence:
         self.tokens: Optional[List[str]] = None
 
     @property
-    def n_blocks(self) -> int:
+    def n_blocks(self) -> int:  # 已经使用的block的个数
         return (self.get_len() + self.block_size - 1) // self.block_size
 
     @property
-    def prompt(self) -> Optional[str]:
+    def prompt(self) -> Optional[str]:  # input的prompt
         return self.inputs.prompt
 
     @property
@@ -647,7 +647,7 @@ class SequenceGroup:
         self.first_seq = seqs[0]
         self.arrival_time = arrival_time
         self.is_single_seq = len(seqs) == 1
-        self.seqs_dict = {seq.seq_id: seq for seq in seqs}
+        self.seqs_dict = {seq.seq_id: seq for seq in seqs}  # {0: Sequence(seq_id=0, status=WAITING, num_blocks=1, }
 
         self.sampling_params = sampling_params
         self.metrics = RequestMetrics(arrival_time=arrival_time,
@@ -657,7 +657,7 @@ class SequenceGroup:
                                       time_in_queue=None)
         self.lora_request = lora_request
         self.prompt_logprobs: Optional[PromptLogprobs] = None
-        self.state = SequenceGroupState()
+        self.state = SequenceGroupState()  # SequenceGroupState(num_steps=1, current_step=0)
         self.embeddings = embeddings
         self.pooling_params = pooling_params
         self.prompt_adapter_request = prompt_adapter_request

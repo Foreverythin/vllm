@@ -78,7 +78,7 @@ class ConfigFormat(str, enum.Enum):
 def file_or_path_exists(model: Union[str, Path], config_name, revision,
                         token) -> bool:
     if Path(model).exists():
-        return (Path(model) / config_name).is_file()
+        return (Path(model) / config_name).is_file()  # 检查模型目录下的config.json文件是否存在
 
     # Offline mode support: Check if config file is cached already
     cached_filepath = try_to_load_from_cache(repo_id=model,
@@ -100,7 +100,7 @@ def file_or_path_exists(model: Union[str, Path], config_name, revision,
 
 def patch_rope_scaling(config: PretrainedConfig) -> None:
     """Provide backwards compatibility for RoPE."""
-    text_config = getattr(config, "text_config", None)
+    text_config = getattr(config, "text_config", None)  # None
     if text_config is not None:
         patch_rope_scaling(text_config)
 
@@ -164,15 +164,15 @@ def get_config(
 ) -> PretrainedConfig:
     # Separate model folder from file path for GGUF models
 
-    is_gguf = check_gguf_file(model)
+    is_gguf = check_gguf_file(model)  # false
     if is_gguf:
         kwargs["gguf_file"] = Path(model).name
         model = Path(model).parent
 
     if config_format == ConfigFormat.AUTO:
-        if is_gguf or file_or_path_exists(
+        if is_gguf or file_or_path_exists(  # file_or_path_exists的作用是检查 模型目录下的config.json文件是否存在
                 model, HF_CONFIG_NAME, revision=revision, token=token):
-            config_format = ConfigFormat.HF
+            config_format = ConfigFormat.HF  # 那么就可以判断该模型是一个HF的格式
         elif file_or_path_exists(model,
                                  MISTRAL_CONFIG_NAME,
                                  revision=revision,
@@ -188,7 +188,7 @@ def get_config(
             raise ValueError(f"No supported config format found in {model}")
 
     if config_format == ConfigFormat.HF:
-        config_dict, _ = PretrainedConfig.get_config_dict(
+        config_dict, _ = PretrainedConfig.get_config_dict(  # 从config.json中读取配置数据
             model,
             revision=revision,
             code_revision=code_revision,
@@ -197,7 +197,7 @@ def get_config(
         )
 
         # Use custom model class if it's in our registry
-        model_type = config_dict.get("model_type")
+        model_type = config_dict.get("model_type")  # qwen2
         if model_type in _CONFIG_REGISTRY:
             config_class = _CONFIG_REGISTRY[model_type]
             config = config_class.from_pretrained(

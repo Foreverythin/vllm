@@ -8,16 +8,12 @@ from vllm.utils import FlexibleArgumentParser
 def create_test_prompts() -> List[Tuple[str, SamplingParams]]:
     """Create a list of test prompts with their sampling parameters."""
     return [
-        ("A robot may not injure a human being",
-         SamplingParams(temperature=0.0, logprobs=1, prompt_logprobs=1)),
-        ("To be or not to be,",
-         SamplingParams(temperature=0.8, top_k=5, presence_penalty=0.2)),
+        ("In the story that you told me the day before yesterday, a smart robot may not injure a human being to some extent in the future",
+         SamplingParams(temperature=0.1)),
         ("What is the meaning of life?",
-         SamplingParams(n=2,
-                        best_of=5,
-                        temperature=0.8,
-                        top_p=0.95,
-                        frequency_penalty=0.1)),
+         SamplingParams(temperature=0.8)),
+        # ("To be or not to be,",
+        #  SamplingParams(temperature=0.8, top_k=5, presence_penalty=0.2)),
     ]
 
 
@@ -41,8 +37,8 @@ def process_requests(engine: LLMEngine,
 
 def initialize_engine(args: argparse.Namespace) -> LLMEngine:
     """Initialize the LLMEngine from the command line arguments."""
-    engine_args = EngineArgs.from_cli_args(args)
-    return LLMEngine.from_engine_args(engine_args)
+    engine_args = EngineArgs.from_cli_args(args)  # 根据cli参数来初始化engine_args实例
+    return LLMEngine.from_engine_args(engine_args)  # 根据engine_args实例来初始化LLMEngine实例
 
 
 def main(args: argparse.Namespace):

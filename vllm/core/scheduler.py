@@ -930,7 +930,7 @@ class Scheduler:
                 num_prompt_tokens = waiting_seqs[0].get_len()
                 assert num_new_tokens == num_prompt_tokens
 
-            prompt_limit = self._get_prompt_limit(seq_group)
+            prompt_limit = self._get_prompt_limit(seq_group)  # min(self.scheduler_config.max_model_len, self.scheduler_config.max_num_batched_tokens)
             if num_new_tokens > prompt_limit:
                 logger.warning(
                     "Input prompt (%d tokens) is too long"

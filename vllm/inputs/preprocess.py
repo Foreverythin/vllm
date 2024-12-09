@@ -286,11 +286,11 @@ class InputPreprocessor:
 
         * :class:`SingletonInputs` instance
         """
-        parsed = parse_singleton_prompt(prompt)
+        parsed = parse_singleton_prompt(prompt)  # 解析prompt， {'type': 'str', 'content': 'A robot may not injure a human being'}
 
         if parsed["type"] == "str":
             prompt_text = parsed["content"]
-            prompt_token_ids = self._tokenize_prompt(
+            prompt_token_ids = self._tokenize_prompt(  # [32, 12305, 1231, 537, 5811, 552, 264, 3738, 1660]
                 prompt_text,
                 request_id=request_id,
                 lora_request=lora_request,
@@ -596,13 +596,13 @@ class InputPreprocessor:
         * :class:`DecoderOnlyInputs` instance
         """
 
-        prompt_comps = self._prompt_to_llm_inputs(
+        prompt_comps = self._prompt_to_llm_inputs(  # {'type': 'token', 'prompt_token_ids': [32, 12305, 1231, 537, 5811, 552, 264, 3738, 1660], 'prompt': 'A robot may not injure a human being'}，这里的type除了可以等于token也可以等于multimodal
             prompt,
             request_id=request_id,
             lora_request=lora_request,
         )
 
-        return self._build_decoder_only_llm_inputs(
+        return self._build_decoder_only_llm_inputs(  
             prompt_comps,
             prompt_adapter_request=prompt_adapter_request,
         )
